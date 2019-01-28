@@ -1,4 +1,4 @@
-elconst request = require("request");
+const request = require("request");
 const fs = require("fs");
 const staticPath = "ajax";
 const utils = require("./utils");
