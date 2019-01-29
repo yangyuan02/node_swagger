@@ -2,6 +2,13 @@ const request = require("request");
 const fs = require("fs");
 const staticPath = "ajax";
 const utils = require("./utils");
+const isRef = function (key) {
+  if (!key || key !== '$ref') {
+    return;
+  } else {
+    isRef(key)
+  }
+}
 const createControllerJs = function(res) {
   const data = res.map(item => {
     item.name = utils.tranformStr(item.name);
@@ -18,7 +25,8 @@ const createUrl = function(params) {
       controller:
         params[key].post && params[key].post.tags[0]
           ? utils.tranformStr(params[key].post.tags[0])
-          : ""
+          : "",
+      description:params[key].post && params[key].post.description ? params[key].post.description : '请后台添加接口说明'
 
     };
     urls.push(obj);
@@ -42,10 +50,17 @@ const mergeUrl = function(data) {
   }
   return res;
 };
+const annotationTemp = function (params) {
+  const content =
+  `/** 
+  ${params.description}
+   */`;
+  return content
+}
 const FunContent = function (funName) {
   // const contents = [];
   const content = `function ${funName}() {
-
+    
   }`;
   return content
 }
@@ -54,11 +69,12 @@ const contentJs = function (data, key) {
     data.forEach(item => {
         if (item.controller === key) {
           console.log(item)
+          content = `const baseUrl = '${item.urls[0].key.substr(0, item.urls[0].key.lastIndexOf('/')+1)}';\n`
             // item && item.urls ? (content = FunContent(item.controller)) : (content = '')
             if (item && item.urls) {
               item.urls.forEach(item => {
                 let str = item.key.toString()
-                content += FunContent(str.substr(str.lastIndexOf('/')+1)) + ',';
+                content += `${annotationTemp(item)} \n ${FunContent(str.substr(str.lastIndexOf('/')+1))} \n`;
               })
             }
         };
@@ -71,7 +87,7 @@ request("http://192.168.1.43:9101/v2/api-docs", (error, response, res) => {
   const createUrlData = createUrl(paths);
   const mergeUrlData = mergeUrl(createUrlData);
   createControllerJs(data.tags).forEach(item => { // 创建conTroller.js
-      fs.writeFileSync(`${staticPath}/${item.name}.js`, `${JSON.stringify(contentJs(mergeUrlData,item.name))}`, err => {
+      fs.writeFileSync(`${staticPath}/${item.name}.js`, `/**${item.description}*/\n${contentJs(mergeUrlData,item.name)}`, err => {
           if (err) {
               throw err
           }
