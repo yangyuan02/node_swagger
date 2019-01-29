@@ -42,12 +42,25 @@ const mergeUrl = function(data) {
   }
   return res;
 };
+const FunContent = function (funName) {
+  // const contents = [];
+  const content = `function ${funName}() {
 
+  }`;
+  return content
+}
 const contentJs = function (data, key) {    
     let content = '';
     data.forEach(item => {
         if (item.controller === key) {
-            content = item && item.urls ? JSON.stringify(item.urls): ''
+          console.log(item)
+            // item && item.urls ? (content = FunContent(item.controller)) : (content = '')
+            if (item && item.urls) {
+              item.urls.forEach(item => {
+                let str = item.key.toString()
+                content += FunContent(str.substr(str.lastIndexOf('/')+1)) + ',';
+              })
+            }
         };
     })
     return content
