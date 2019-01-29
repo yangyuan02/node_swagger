@@ -10,3 +10,4 @@ npm-debug.log*
 .vscode
 *.swp
 package-lock.json
+/ajax

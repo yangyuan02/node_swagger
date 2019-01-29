@@ -26,8 +26,7 @@ const createUrl = function(params) {
   return urls;
 };
 
-const mergeUrl = function(params) {
-  const data = createUrl(params);
+const mergeUrl = function(data) {
   const hash = {};
   const res = [];
   data.forEach(function(item) {
@@ -44,10 +43,7 @@ const mergeUrl = function(params) {
   return res;
 };
 
-const contentJs = function (params, key) {
-    console.log(params)
-    const data = mergeUrl(params);
-    
+const contentJs = function (data, key) {    
     let content = '';
     data.forEach(item => {
         if (item.controller === key) {
@@ -56,11 +52,13 @@ const contentJs = function (params, key) {
     })
     return content
 }
-request("http://101.231.154.154:18050/v2/api-docs", (error, response, res) => {
+request("http://192.168.1.43:9101/v2/api-docs", (error, response, res) => {
   const data = JSON.parse(res);
   const paths = data.paths;
+  const createUrlData = createUrl(paths);
+  const mergeUrlData = mergeUrl(createUrlData);
   createControllerJs(data.tags).forEach(item => { // 创建conTroller.js
-      fs.writeFileSync(`${staticPath}/${item.name}.js`, `${JSON.stringify(contentJs(paths,item.name))}`, err => {
+      fs.writeFileSync(`${staticPath}/${item.name}.js`, `${JSON.stringify(contentJs(mergeUrlData,item.name))}`, err => {
           if (err) {
               throw err
           }
